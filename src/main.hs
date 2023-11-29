@@ -12,7 +12,7 @@ import qualified Discord.Requests as R
 main :: IO ()
 main = do
     -- Read the bot token from a file
-    token <- TIO.readFile "auth-token.txt"
+    token <- TIO.readFile "auth-token.secret"
     userFacingError <- runDiscord $ def
              { discordToken = token
              , discordOnEvent = eventHandler
