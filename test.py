@@ -81,3 +81,4 @@ if __name__ == '__main__':
         twitch_client_id = twitch_file.read().strip()
         token = token_file.read().strip()
     main()
+
