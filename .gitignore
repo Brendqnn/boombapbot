@@ -1,5 +1,5 @@
 *.secret
-venv
+.venv
 dist
 dist-*
 cabal-dev
