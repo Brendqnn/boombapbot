@@ -6,7 +6,7 @@ import youtube_dl
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 
-@bot.command(name="play", help="Play audio from a SoundCloud link. YouTube has most videos blocked from streaming.")
+@bot.command(name="play", help="Play audio from a SoundCloud link. YouTube has most videos blocked from streaming.") # lol
 async def play(bot, url):
     if bot.voice_client is None:
         await ctx.send("I'm not in a voice channel. Use /join to make me join a channel.")
@@ -46,33 +46,21 @@ async def join_vc(bot):
 
 @bot.command(name="leavevc")
 async def leave_vc(bot):
-    voice_channel = discord.utils.get(bot.voice_clients, guild=bot.guild)
-    if voice_channel:
-        await voice_channel.disconnect()
-        await bot.send("Left voice channel.")
+    if bot.voice_client is not None and bot.voice_client.is_connected():
+        await bot.voice_client.disconnect()
     else:
-        await bot.send("Not in a voice channel.")
+        await bot.send("Im am not connected to a voice channel.")
 
 @bot.event
 async def on_message(message):
     if message.channel.name == "bot-commands" and message.content.lower().startswith("hi boombapbot"):
-        await message.channel.send("Hello! I'm BoombapBot. How can I help you?")
+        await message.channel.send("whatever lol")
     await bot.process_commands(message)
-
-def print_roles():
-    for guild in bot.guilds:
-            homies_role = discord.utils.get(guild.roles, name="homies")
-            if homies_role:
-                print(f"  Users in the 'homies' role:")
-                for member in guild.members:
-                    if homies_role in member.roles:
-                        print(f"    {member.name}")
 
 def main():
     @bot.event
     async def on_ready():
-        print(f"Logged in as {bot.user.name}")
-        print_roles()
+        print(f"Logged in as {bot.user.name}")     
 
     bot.run(token)
         
