@@ -10,7 +10,6 @@ queue = []
 
 global current_song
 
-
 def add_queue(url):
     if url in queue:
         return
@@ -79,14 +78,6 @@ async def leave_vc(bot):
         await bot.voice_client.disconnect()
     else:
         await bot.send("Im am not connected to a voice channel.")
-
-@bot.event
-async def on_message(message):
-    if message.content.lower().startswith("boombapbot") or message.content.lower().endswith("boombapbot"):
-        await message.channel.send("whatever lol")
-    if message.content.lower().startswith("hi"):
-        await message.channel.send("whats up botch nogga. i shoot you in your robba.... bitch")
-    await bot.process_commands(message)
 
 def main():
     @bot.event
