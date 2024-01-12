@@ -6,11 +6,20 @@ import youtube_dl
 
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 
-@bot.command(name="play", help="Play audio from a SoundCloud link. YouTube has most videos blocked from streaming.") # lol
-async def play(bot, url):
-    if bot.voice_client is None:
-        await ctx.send("I'm not in a voice channel. Use /join to make me join a channel.")
+queue = []
+
+global current_song
+
+
+def add_queue(url):
+    if url in queue:
         return
+    queue.append(url)
+
+@bot.command(name="play", help="Play audio from a SoundCloud link. YouTube has most videos blocked from streaming.")
+async def play(bot, url):
+    if bot.voice_client is not None and bot.voice_client.is_connected():
+        join_vc(bot)
 
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -23,20 +32,40 @@ async def play(bot, url):
 
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=False)
-        url2 = info_dict['formats'][0]['url']
-        bot.voice_client.stop()
-        FFMPEG_OPTIONS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-            'options': '-vn',
-        }
-        bot.voice_client.play(discord.FFmpegPCMAudio(url2, **FFMPEG_OPTIONS))
 
-@bot.command(name="stop", help="Stop playing audio.")
-async def stop(bot):
-    voice_channel = bot.message.guild.voice_client
+        if 'entries' in info_dict:  # Check if it's a playlist
+            for entry in info_dict['entries']:
+                add_queue(entry)
+                if bot.guild.voice_client.is_playing():
+                    return
+                url2 = queue[0]['formats'][0]['url']
+                FFMPEG_OPTIONS = {
+                    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+                    'options': '-vn',
+                }
+                bot.voice_client.play(discord.FFmpegPCMAudio(url2, **FFMPEG_OPTIONS))
+
+        else:  # It's a single track
+            url2 = info_dict['formats'][0]['url']
+            FFMPEG_OPTIONS = {
+                'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+                'options': '-vn',
+            }
+            bot.voice_client.play(discord.FFmpegPCMAudio(url2, **FFMPEG_OPTIONS))
+            await bot.send(f"Now playing: {info_dict['title']}")
+
+@bot.command(name="pause")
+async def pause(bot):
+    voice_channel = bot.guild.voice_client
     if voice_channel.is_playing():
-        voice_channel.stop()
-    await voice_channel.disconnect()
+        voice_channel.pause()
+    else:
+        await bot.send("No audio is playing.")
+
+@bot.command(name="resume")
+async def resume(bot):
+    voice_channel = bot.guild.voice_client
+    voice_channel.resume()
 
 @bot.command(name="joinvc")
 async def join_vc(bot):
@@ -53,8 +82,10 @@ async def leave_vc(bot):
 
 @bot.event
 async def on_message(message):
-    if message.channel.name == "bot-commands" and message.content.lower().startswith("hi boombapbot"):
+    if message.content.lower().startswith("boombapbot") or message.content.lower().endswith("boombapbot"):
         await message.channel.send("whatever lol")
+    if message.content.lower().startswith("hi"):
+        await message.channel.send("whats up botch nogga. i shoot you in your robba.... bitch")
     await bot.process_commands(message)
 
 def main():
