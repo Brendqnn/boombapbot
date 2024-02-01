@@ -8,7 +8,6 @@ import asyncio
 bot = commands.Bot(command_prefix="/", intents=discord.Intents.all())
 
 queue = []
-
 idx = 0
 
 YDL_OPTIONS = {
@@ -17,6 +16,15 @@ YDL_OPTIONS = {
         'key': 'FFmpegExtractAudio',
         'preferredcodec': 'aac',
         'preferredquality': '320', # Stream with 320 kbps
+    }],
+}
+
+DL_YDL_OPTIONS = {
+    'format': 'bestaudio/best',
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '320',
     }],
 }
 
@@ -57,18 +65,7 @@ async def play_next(bot, idx):
         url = entry['formats'][0]['url']
         bot.voice_client.play(discord.FFmpegPCMAudio(url, **FFMPEG_OPTIONS))
 
-
-async def get_title_from_url(url):
-    ydl_opts = {'quiet': True}
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        try:
-            info_dict = ydl.extract_info(url, download=False)
-            if info_dict and 'title' in info_dict:
-                return info_dict['title']
-        except Exception as e:
-            print(f"Error getting title for {url}: {e}")
-    return "Unknown Title"
-
+# TODO 
 @bot.command(name="repeat")
 async def repeat(bot):
     pass
@@ -83,7 +80,6 @@ async def next(bot):
     else:
         await bot.send("The last track in queue is currently playing.")
 
-# */ TODO */
 @bot.command(name="back")
 async def back(bot):
     global idx
